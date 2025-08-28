@@ -16,6 +16,36 @@ services:
       interval: 5s
       timeout: 5s
       retries: 10
+
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/ens_hub
+      PORT: 4000
+      CORS_ALLOWLIST: '*'
+      # API_KEYS: yourkey1,yourkey2
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - '4000:4000'
+
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+    environment:
+      NODE_ENV: production
+      NEXT_PUBLIC_API_BASE: http://api:4000
+      # NEXT_PUBLIC_API_KEY: yourkey1
+    depends_on:
+      - api
+    ports:
+      - '3001:3001'
+
 volumes:
   pgdata:
 
