@@ -1,0 +1,29 @@
+{
+  "name": "ens-data-index-analytics-hub",
+  "private": true,
+  "version": "0.1.0",
+  "description": "ENS Data Index & Analytics Hub: open-source dashboard and APIs for ENS metrics",
+  "license": "MIT",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "npm run -ws build",
+    "dev": "concurrently -k -n api,web,ingest -c blue,green,magenta \"npm --workspace apps/api run dev\" \"npm --workspace apps/web run dev\" \"npm --workspace apps/ingest run dev\"",
+    "lint": "npm run -ws lint",
+    "format": "prettier --write .",
+    "typecheck": "npm run -ws typecheck"
+  },
+  "devDependencies": {
+    "@types/node": "^22.5.4",
+    "concurrently": "^9.0.1",
+    "eslint": "^9.10.0",
+    "prettier": "^3.3.3",
+    "typescript": "^5.5.4"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}
+

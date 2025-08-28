@@ -1,0 +1,33 @@
+{
+  "name": "@ens-hub/api",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc -p tsconfig.json",
+    "start": "node dist/index.js",
+    "lint": "eslint .",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "prisma:generate": "prisma generate",
+    "db:push": "prisma db push"
+  },
+  "dependencies": {
+    "@prisma/client": "^5.18.0",
+    "dotenv": "^16.6.1",
+    "fastify": "^4.28.1",
+    "mercurius": "^14.1.0",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "prisma": "^5.18.0",
+    "tsx": "^4.19.1",
+    "typescript": "^5.5.4"
+  },
+  "bin": {
+    "seed-api": "./dist/scripts/seed.js"
+  },
+  "prisma": {
+    "schema": "../../packages/db/prisma/schema.prisma"
+  }
+}

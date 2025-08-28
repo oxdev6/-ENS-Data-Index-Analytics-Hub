@@ -1,0 +1,27 @@
+{
+  "name": "@ens-hub/ingest",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc -p tsconfig.json",
+    "start": "node dist/index.js"
+  },
+  "dependencies": {
+    "@prisma/client": "^5.18.0",
+    "graphql-request": "^7.1.2",
+    "dotenv": "^16.4.5",
+    "viem": "^2.19.3",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "tsx": "^4.19.1",
+    "typescript": "^5.5.4",
+    "prisma": "^5.18.0"
+  },
+  "prisma": {
+    "schema": "../../packages/db/prisma/schema.prisma"
+  }
+}
+

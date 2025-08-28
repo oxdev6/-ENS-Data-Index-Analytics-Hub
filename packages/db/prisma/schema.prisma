@@ -1,0 +1,65 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model EnsName {
+  id               String   @id @default(cuid())
+  name             String   @unique
+  labelHash        String   @unique
+  registrant       String
+  controller       String?
+  registrationDate DateTime
+  expirationDate   DateTime
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@index([registrant])
+  @@index([registrationDate])
+}
+
+model RegistrationEvent {
+  id           String   @id @default(cuid())
+  name         String
+  txHash       String   @unique
+  blockNumber  Int
+  blockTime    DateTime
+  registrant   String
+  costEth      Decimal  @db.Decimal(65, 18)
+  chainId      Int
+  createdAt    DateTime @default(now())
+
+  @@index([blockTime])
+}
+
+model RenewalEvent {
+  id           String   @id @default(cuid())
+  name         String
+  txHash       String   @unique
+  blockNumber  Int
+  blockTime    DateTime
+  payer        String
+  costEth      Decimal  @db.Decimal(65, 18)
+  years        Int
+  chainId      Int
+  createdAt    DateTime @default(now())
+
+  @@index([blockTime])
+}
+
+model TransferEvent {
+  id           String   @id @default(cuid())
+  name         String
+  txHash       String   @unique
+  blockNumber  Int
+  blockTime    DateTime
+  from         String
+  to           String
+  chainId      Int
+  createdAt    DateTime @default(now())
+}
+
