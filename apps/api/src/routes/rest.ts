@@ -2,6 +2,7 @@ import { FastifyInstance } from 'fastify';
 import { PrismaClient } from '@prisma/client';
 import { z } from 'zod';
 import { toCsv, toCsvStream } from '../utils/csv.js';
+import { cache, generateCacheKey, withCache } from '../cache.js';
 
 const prisma = new PrismaClient();
 
@@ -11,31 +12,39 @@ const paginationSchema = z.object({
   from: z.string().datetime().optional(),
   to: z.string().datetime().optional(),
   chainId: z.coerce.number().int().optional(),
+  name: z.string().optional(),
 });
 
 export async function restRoutes(app: FastifyInstance): Promise<void> {
 
   app.get('/registrations', async (req, reply) => {
-    const { limit, offset, from, to, chainId } = paginationSchema.parse(req.query);
-    const rows = await prisma.registrationEvent.findMany({
-      where: {
+    const { limit, offset, from, to, chainId, name } = paginationSchema.parse(req.query);
+    
+    // Generate cache key based on query parameters
+    const cacheKey = generateCacheKey('registrations', { limit, offset, from, to, chainId, name });
+    
+    return withCache(cacheKey, async () => {
+      const where = {
         ...(from || to ? { blockTime: { gte: from ? new Date(from) : undefined, lte: to ? new Date(to) : undefined } } : {}),
         ...(chainId ? { chainId } : {}),
-      },
-      orderBy: { blockTime: 'desc' },
-      take: limit,
-      skip: offset,
-    });
-    const total = await prisma.registrationEvent.count({
-      where: {
-        ...(from || to ? { blockTime: { gte: from ? new Date(from) : undefined, lte: to ? new Date(to) : undefined } } : {}),
-        ...(chainId ? { chainId } : {}),
-      },
-    });
-    return {
-      data: rows.map((r) => ({ ...r, costEth: r.costEth.toString() })),
-      pagination: { limit, offset, total }
-    };
+        ...(name ? { name: { contains: name, mode: 'insensitive' } } : {}),
+      };
+
+      const [rows, total] = await prisma.$transaction([
+        prisma.registrationEvent.findMany({
+          where,
+          orderBy: { blockTime: 'desc' },
+          take: limit,
+          skip: offset,
+        }),
+        prisma.registrationEvent.count({ where })
+      ]);
+
+      return {
+        data: rows.map((r) => ({ ...r, costEth: r.costEth.toString() })),
+        pagination: { limit, offset, total }
+      };
+    }, 60); // Cache for 1 minute
   });
 
   app.get('/renewals', async (req, reply) => {

@@ -1,5 +1,6 @@
 import Fastify from 'fastify';
 import mercurius from 'mercurius';
+import { PrismaClient } from '@prisma/client';
 import { typeDefs } from './graphql/schema.js';
 import { resolvers } from './graphql/resolvers.js';
 import { config } from './config.js';
@@ -13,6 +14,7 @@ const __dirname = dirname(__filename);
 dotenv.config({ path: resolve(__dirname, '../../../.env') });
 
 const server = Fastify({ logger: true });
+const prisma = new PrismaClient();
 
 // Basic CORS and rate-limiting without plugins
 const requestsByIp: Map<string, { count: number; windowStart: number }> = new Map();
@@ -100,6 +102,54 @@ server.get('/docs', async (_req, reply) => {
   </html>`;
   reply.header('Content-Type', 'text/html');
   return reply.send(html);
+});
+
+// WebSocket support for real-time updates
+server.register(require('@fastify/websocket'));
+
+server.register(async function (fastify) {
+  fastify.get('/ws', { websocket: true }, (connection, req) => {
+    connection.socket.on('message', (message) => {
+      try {
+        const data = JSON.parse(message.toString());
+        
+        if (data.type === 'subscribe') {
+          connection.socket.send(JSON.stringify({
+            type: 'subscribed',
+            channel: data.channel || 'registrations'
+          }));
+        }
+      } catch (error) {
+        console.error('WebSocket message error:', error);
+      }
+    });
+
+    // Send periodic updates (every 30 seconds)
+    const interval = setInterval(async () => {
+      try {
+        const recentRegistrations = await prisma.registrationEvent.findMany({
+          take: 5,
+          orderBy: { blockTime: 'desc' }
+        });
+        
+        connection.socket.send(JSON.stringify({
+          type: 'update',
+          data: {
+            recentRegistrations: recentRegistrations.map(r => ({
+              ...r,
+              costEth: r.costEth.toString()
+            }))
+          }
+        }));
+      } catch (error) {
+        console.error('WebSocket update error:', error);
+      }
+    }, 30000);
+
+    connection.socket.on('close', () => {
+      clearInterval(interval);
+    });
+  });
 });
 
 const port = Number(process.env.PORT || 4000);

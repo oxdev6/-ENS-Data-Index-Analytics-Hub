@@ -39,8 +39,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <div className="mx-auto max-w-6xl grid grid-cols-12 gap-4 p-4">
             <aside className="col-span-12 md:col-span-3 lg:col-span-2">
               <nav className="rounded-lg border bg-white p-3 text-sm dark:border-gray-800 dark:bg-gray-800">
-                <a href="#" className="block rounded-md px-3 py-2 hover:bg-gray-50 dark:hover:bg-gray-700">Overview</a>
-                <a href="/" className="block rounded-md px-3 py-2 hover:bg-gray-50 dark:hover:bg-gray-700">Names</a>
+                <a href="/" className="block rounded-md px-3 py-2 hover:bg-gray-50 dark:hover:bg-gray-700">Overview</a>
+                <a href="/names" className="block rounded-md px-3 py-2 hover:bg-gray-50 dark:hover:bg-gray-700">Names</a>
+                <a href="/analytics" className="block rounded-md px-3 py-2 hover:bg-gray-50 dark:hover:bg-gray-700">Analytics</a>
+                <a href="/l2" className="block rounded-md px-3 py-2 hover:bg-gray-50 dark:hover:bg-gray-700">L2 Adoption</a>
                 <a href="http://localhost:4000/docs" target="_blank" className="block rounded-md px-3 py-2 hover:bg-gray-50 dark:hover:bg-gray-700">Docs</a>
                 <a href="http://localhost:4000/export/registrations.csv" target="_blank" className="block rounded-md px-3 py-2 hover:bg-gray-50 dark:hover:bg-gray-700">Exports</a>
               </nav>
