@@ -48,22 +48,21 @@ export async function restRoutes(app: FastifyInstance): Promise<void> {
   });
 
   app.get('/renewals', async (req, reply) => {
-    const { limit, offset, from, to, chainId } = paginationSchema.parse(req.query);
-    const rows = await prisma.renewalEvent.findMany({
-      where: {
-        ...(from || to ? { blockTime: { gte: from ? new Date(from) : undefined, lte: to ? new Date(to) : undefined } } : {}),
-        ...(chainId ? { chainId } : {}),
-      },
-      orderBy: { blockTime: 'desc' },
-      take: limit,
-      skip: offset,
-    });
-    const total = await prisma.renewalEvent.count({
-      where: {
-        ...(from || to ? { blockTime: { gte: from ? new Date(from) : undefined, lte: to ? new Date(to) : undefined } } : {}),
-        ...(chainId ? { chainId } : {}),
-      },
-    });
+    const { limit, offset, from, to, chainId, name } = paginationSchema.parse(req.query);
+    const where = {
+      ...(from || to ? { blockTime: { gte: from ? new Date(from) : undefined, lte: to ? new Date(to) : undefined } } : {}),
+      ...(chainId ? { chainId } : {}),
+      ...(name ? { name: { contains: name, mode: 'insensitive' } } : {}),
+    } as const;
+    const [rows, total] = await prisma.$transaction([
+      prisma.renewalEvent.findMany({
+        where,
+        orderBy: { blockTime: 'desc' },
+        take: limit,
+        skip: offset,
+      }),
+      prisma.renewalEvent.count({ where })
+    ]);
     return {
       data: rows.map((r) => ({ ...r, costEth: r.costEth.toString() })),
       pagination: { limit, offset, total }

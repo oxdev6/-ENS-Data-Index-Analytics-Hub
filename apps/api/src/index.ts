@@ -1,5 +1,6 @@
 import Fastify from 'fastify';
 import mercurius from 'mercurius';
+import websocket from '@fastify/websocket';
 import { PrismaClient } from '@prisma/client';
 import { typeDefs } from './graphql/schema.js';
 import { resolvers } from './graphql/resolvers.js';
@@ -104,8 +105,8 @@ server.get('/docs', async (_req, reply) => {
   return reply.send(html);
 });
 
-// WebSocket support for real-time updates
-server.register(require('@fastify/websocket'));
+// WebSocket support for real-time updates (ESM import)
+server.register(websocket);
 
 server.register(async function (fastify) {
   fastify.get('/ws', { websocket: true }, (connection, req) => {
